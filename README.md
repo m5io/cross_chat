@@ -51,21 +51,44 @@ OBS Studio
 
 ### 1. 安装语音识别插件
 
-下载 [obs-localvocal](https://github.com/royshil/obs-localvocal/releases) 并安装：
+所有平台通用：下载 [obs-localvocal](https://github.com/royshil/obs-localvocal/releases) 对应版本并安装。
+
 - OBS → 麦克风音频源 → 右键 → 滤镜 → 添加 **LocalVocal**
 - 确认 OBS 中出现 Text (GDI+) 字幕源
-- （可选）在 LocalVocal 设置中开启"输出到文件"，用于匹配引擎
+- （可选）在 LocalVocal 设置中开启"输出到文件"，供匹配引擎读取
 
 ### 2. 安装后端依赖
 
+#### Linux
+
 ```bash
-cd cross_chat
+cd ~/cross_chat
 python3 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
+#### macOS
+
+```bash
+cd ~/cross_chat
+python3 -m venv venv
+source venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+#### Windows (PowerShell / CMD)
+
+```powershell
+cd C:\Users\你的用户名\cross_chat
+python -m venv venv
+venv\Scripts\activate
+pip install -r backend\requirements.txt
+```
+
 ### 3. 启动后端
+
+> 需要先知道你的 B 站直播间 ID（数字，如 `12345678`）。
 
 ```bash
 cd backend
@@ -73,18 +96,35 @@ python mvp_backend.py --room-id 你的直播间号
 ```
 
 可选参数：
-- `--room-id` — B 站直播间 ID（必填）
-- `--subtitle-file` — obs-localvocal 字幕文件路径（如开启文件输出）
+
+| 参数 | 说明 |
+|------|------|
+| `--room-id` | B 站直播间 ID（必填） |
+| `--subtitle-file` | obs-localvocal 字幕输出文件路径（开启文件输出后填写） |
 
 ### 4. 配置 OBS Browser Source
 
-- OBS → 添加源 → **Browser Source**
-- URL: `file:///home/xxx/cross_chat/frontend/index.html`（替换为实际路径）
-- 调整位置和尺寸以适配你的直播布局
+OBS → 添加源 → **Browser Source**，URL 填入（替换为你实际的 `cross_chat` 路径）：
 
-### 5. 开播
+| 平台 | URL 格式 |
+|------|----------|
+| **Linux** | `file:///home/你的用户名/cross_chat/frontend/index.html` |
+| **macOS** | `file:///Users/你的用户名/cross_chat/frontend/index.html` |
+| **Windows** | `file:///C:/Users/你的用户名/cross_chat/frontend/index.html` |
 
-开始直播，说话，观察弹幕匹配效果。
+> Windows 注意：路径分隔符用 `/`，不要用 `\`；盘符前只有一个 `/`，如 `file:///C:/Users/...`
+
+然后在 OBS 中调整 Browser Source 的位置和尺寸，推荐放在画面底部或顶部。
+
+### 5. 开播测试
+
+开始直播 → 对着麦克风说话 → 观察：
+
+- 🎤 字幕条是否出现文字（需要 obs-localvocal 正常工作）
+- 📡 弹幕是否在列表中滚动
+- ✨ 主播说话匹配到弹幕时是否高亮
+
+> **提示**：不启动 OBS 也可以先在浏览器里预览叠加层效果——打开 `frontend/index.html`，同时确保后端已运行。
 
 ## 项目结构
 
