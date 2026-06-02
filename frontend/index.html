@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross Chat - Overlay</title>
+<link rel="stylesheet" href="css/overlay.css">
+<style>
+/* 内联关键路径样式，避免外部 CSS 加载闪烁 */
+body { margin:0; padding:0; overflow:hidden; background:transparent; }
+#app { width:100vw; height:100vh; position:relative; font-family:"Microsoft YaHei","PingFang SC",sans-serif; }
+</style>
+</head>
+<body>
+<div id="app">
+    <!-- 主播字幕条 -->
+    <div id="host-subtitle-bar">
+        <span id="host-text"></span>
+    </div>
+
+    <!-- 匹配指示器 -->
+    <div id="match-indicator"></div>
+
+    <!-- 弹幕滚动容器 -->
+    <div id="danmu-container"></div>
+</div>
+
+<script src="js/ws_client.js"></script>
+<script src="js/state.js"></script>
+<script src="js/danmu_renderer.js"></script>
+<script src="js/host_bar.js"></script>
+<script src="js/match_effects.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

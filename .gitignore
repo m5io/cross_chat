@@ -1,6 +1,16 @@
+# Python
 venv/
 __pycache__/
 *.pyc
 *.pyo
+
+# Node / Frontend
+node_modules/
+dist/
+.env
+
+# OS
 .DS_Store
+
+# Project-specific
 subtitles.txt
