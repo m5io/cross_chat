@@ -73,16 +73,20 @@ class WsBridge:
         print(f"[WsBridge] Client connected (total={len(self._clients)})")
         try:
             # 首次连接 → 发送全量快照
-            await ws.send(json.dumps({
+            msg = json.dumps({
                 "type": "state_update",
                 "seq": self._seq,
                 "timestamp": time.time(),
                 "payload": self.state,
-            }, ensure_ascii=False))
+            }, ensure_ascii=False)
+            await ws.send(msg)
             self._seq += 1
-            # 保持连接，只收不发（我们只推送）
-            async for _ in ws:
-                pass
+            print(f"[WsBridge] Initial snapshot sent, keeping connection alive")
+            # 阻塞等待连接关闭
+            await ws.wait_closed()
+            print(f"[WsBridge] Connection closed normally")
+        except Exception as e:
+            print(f"[WsBridge] Handler error: {type(e).__name__}: {e}")
         finally:
             self._clients.discard(ws)
             print(f"[WsBridge] Client disconnected (total={len(self._clients)})")

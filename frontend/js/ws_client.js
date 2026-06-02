@@ -49,8 +49,8 @@ class WsClient {
             }
         };
 
-        this._ws.onclose = () => {
-            console.log("[WsClient] Disconnected, reconnecting in", this._reconnectDelay, "ms");
+        this._ws.onclose = (event) => {
+            console.log("[WsClient] Disconnected code=" + event.code + " reason=" + (event.reason || "").substring(0, 50) + ", reconnecting in " + this._reconnectDelay + "ms");
             setTimeout(() => this._connect(), this._reconnectDelay);
             this._reconnectDelay = Math.min(this._reconnectDelay * 2, this._maxReconnectDelay);
         };

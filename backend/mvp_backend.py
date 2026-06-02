@@ -34,8 +34,9 @@ HIGHLIGHT_DURATION_MS = 3000  # 高亮持续毫秒
 class CrossChatApp:
     """Cross Chat 主应用"""
 
-    def __init__(self, room_id: int):
+    def __init__(self, room_id: int, subtitle_file: str = ""):
         self.room_id = room_id
+        self.subtitle_file = subtitle_file
         self.bridge = WsBridge()
         self.danmu = DanmuClient(room_id)
         self._last_file_pos = 0
@@ -48,7 +49,7 @@ class CrossChatApp:
         self._running = True
         print(f"[CrossChat] Starting MVP backend...")
         print(f"[CrossChat] Room ID: {self.room_id}")
-        print(f"[CrossChat] Subtitle file: {SUBTITLE_FILE or '(disabled)'}")
+        print(f"[CrossChat] Subtitle file: {self.subtitle_file or '(disabled)'}")
         print(f"[CrossChat] WS: ws://localhost:8765")
 
         # 注册弹幕回调
@@ -59,7 +60,7 @@ class CrossChatApp:
             asyncio.create_task(self.danmu.start()),
             asyncio.create_task(self.bridge.start()),
         ]
-        if SUBTITLE_FILE:
+        if self.subtitle_file:
             tasks.append(asyncio.create_task(self._poll_subtitle()))
 
         print("[CrossChat] All services started. Waiting for events...")
@@ -70,6 +71,8 @@ class CrossChatApp:
     async def _on_danmu_event(self, event_type: str, payload: dict):
         if event_type == "new_danmu":
             danmu = payload["danmu"]
+            print(f"[Danmu] #{danmu['id']} {danmu['uname']}: {danmu['text']}")
+
             # 更新 bridge 状态
             self.bridge.update_state(danmu_list=self.danmu.buffer)
 
@@ -89,17 +92,18 @@ class CrossChatApp:
                     )
 
             # 推送状态
+            print(f"[Danmu] Pushing state, buffer size={len(self.danmu.buffer)}, clients={len(self.bridge._clients)}")
             await self.bridge.push_state()
 
     # ---- 字幕文件轮询 ----
 
     async def _poll_subtitle(self):
         """轮询 obs-localvocal 输出的字幕文件，检测新增文本"""
-        print(f"[SubtitlePoll] Watching: {SUBTITLE_FILE}")
+        print(f"[SubtitlePoll] Watching: {self.subtitle_file}")
         while self._running:
             try:
-                if os.path.exists(SUBTITLE_FILE):
-                    with open(SUBTITLE_FILE, "r", encoding="utf-8") as f:
+                if os.path.exists(self.subtitle_file):
+                    with open(self.subtitle_file, "r", encoding="utf-8") as f:
                         f.seek(self._last_file_pos)
                         new_text = f.read()
                         if new_text:
@@ -144,15 +148,14 @@ def main():
         print("[ERROR] 请指定直播间 ID: python mvp_backend.py --room-id 你的直播间号")
         sys.exit(1)
 
-    global SUBTITLE_FILE
-    SUBTITLE_FILE = args.subtitle_file
+    subtitle_file = args.subtitle_file
 
     # 检查文件是否存在
-    if SUBTITLE_FILE and not os.path.exists(SUBTITLE_FILE):
-        print(f"[WARN] 字幕文件不存在: {SUBTITLE_FILE}")
+    if subtitle_file and not os.path.exists(subtitle_file):
+        print(f"[WARN] 字幕文件不存在: {subtitle_file}")
         print(f"[WARN] 将继续运行但不启用语音匹配")
 
-    app = CrossChatApp(args.room_id)
+    app = CrossChatApp(args.room_id, subtitle_file)
     try:
         asyncio.run(app.run())
     except KeyboardInterrupt:
